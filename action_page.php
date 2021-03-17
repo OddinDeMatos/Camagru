@@ -1,6 +1,7 @@
 <?php
 	
 include 'config/setup.php';
+require_once 'login.php';
 $username = $_POST['username'];
 $email = $_POST['email'];
 $password = $_POST['password'];

@@ -4,19 +4,16 @@ require_once 'config/setup.php';
 session_start();
 if (isset($_POST["submit"]))
 {
-	if($_POST["submit"] === "Sign up")
+	if($_POST["submit"] === "submit")
 	{
-			$fullname = $var_name;
-			$username = $var_user;
-			$email = $var_email;
-			$token = bin2hex(random_bytes(50));
-			$passwd = $var_passwd;
-			if ($input_count == 4)
+			$username = $_POST["username"];
+			$email = $_POST["email"];
+			//$token = bin2hex(random_bytes(50));
+			$password = $_POST["password"];
+			if ($username && $email && $password)
 			{
-				$passwd = hash('sha256', $_POST['passwd']);
-				$cpasswd = hash('sha256', $_POST['cpasswd']);
-				$count = 0;
-
+				$password = hash('sha256', $_POST['password']);
+				$exist = FALSE;
 				$result = $con->prepare("SELECT * FROM users");
 				$result->execute();
 				$rows = $result->fetchAll();
@@ -25,18 +22,18 @@ if (isset($_POST["submit"]))
 				{
 					if ($row['email'] == $email || $row['username'] == $username)
 					{
-						$count = 1;
+						$exist = TRUE;
 						array_push($errors,"This username/email is already exists");
 					}
 				}
-				if ($count == 0)
+				if (!$exist)
 				{
-					$sql = "INSERT INTO `users` (`name`, `username`, `email`, `token`, `password`) VALUES (?, ?, ?, ?, ?)";
+					$sql = "INSERT INTO `users` (`username`, `email`, `password`) VALUES (?, ?, ?)";
 					$stmt= $con->prepare($sql);
-					$result = $stmt->execute([$fullname, $username, $email, $token, $passwd]);
+					$result = $stmt->execute([$username, $email, $password]);
 					if ($result){
 						$user_id = $con->lastInsertId();
-						sendVerificationEmail($email, $token);
+						//sendVerificationEmail($email, $token);
 						
 						$_SESSION['id'] = $user_id;
 						$_SESSION['username'] = $username;
@@ -51,7 +48,7 @@ if (isset($_POST["submit"]))
 }
 ?>
 
-<form action="action_page.php" method="POST">
+<form action="signup.php" method="POST">
 	<div class="container">
 	<h1>Sign Up</h1>
 	<label for="username"><b>Username</b></label>
@@ -64,7 +61,7 @@ if (isset($_POST["submit"]))
 	<input type="email" placeholder="Enter Email" name="email" required>
 
 	<div class="clearfix">
-		<button type="submit" class="signupbtn" value="submit">submit</button>
+		<button name="submit" type="submit" class="signupbtn" value="submit">submit</button>
 	</div>
 	</div>
 
